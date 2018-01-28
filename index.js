@@ -2,7 +2,8 @@ import React, { Component } from 'react';
 import {
   Scene,
   Animated,
-  Pano
+  Pano,
+	VrHeadModel
 } from 'react-vr';
 import PropTypes from 'prop-types';
 
@@ -87,29 +88,109 @@ export default class Walk extends Component {
   }
 
   walk = (position) => {
-    const { speed = 0.1 } = this.props;
-
+    const { speed = 1 } = this.props;
+		let headModel = VrHeadModel.rotation()[1];
+		let angle = Math.abs(90 - Math.abs(headModel)); // get complimentary angle
     switch (position) {
       case DIRECTION.FORWARD:
-        this.positionZ = this.positionZ - speed;
-        this.positionPZ = this.positionPZ + (speed * 10);
-        this.moveZ(null, { dz: this.positionZ });
-        this.movePZ(null, { dz: this.positionPZ });
+				if(Math.abs(headModel) < 90) {
+					//z is q1 or q2, move in forward direction, negative.
+					this.positionZ = this.positionZ - (speed * Math.sin(angle * Math.PI / 180));
+					this.positionPZ = this.positionZ;
+					this.moveZ(null, { dz: this.positionZ });
+					this.movePZ(null, { dz: this.positionPZ });
+				}
+				else if(Math.abs(headModel) > 90) { //if positive
+					//z is q3 or q4, move in reverse direction, positive.
+					this.positionZ = this.positionZ + (speed * Math.sin(angle * Math.PI / 180));
+					this.positionPZ = this.positionZ;
+					this.moveZ(null, { dz: this.positionZ });
+					this.movePZ(null, { dz: this.positionPZ });
+				}
+
+				if(headModel > 0) { //if facing left
+					this.positionX = this.positionX - (speed * Math.cos(Math.abs(angle) * Math.PI / 180));
+					this.moveX(null, { dx: this.positionX });
+				}
+				else if(headModel < 0) { //if facing right
+					this.positionX = this.positionX + (speed * Math.cos(Math.abs(angle) * Math.PI / 180));
+					this.moveX(null, { dx: this.positionX });
+				}
         break;
       case DIRECTION.RIGHT:
-        this.positionX = this.positionX + speed;
-        this.moveX(null, { dx: this.positionX });
+				let rightAngle = Math.abs(90 - Math.abs(headModel - 90)); //subtract 90 to pivot the headset right.
+				//the rest is same as fwd
+				if(Math.abs(headModel - 90) < 90) {
+					this.positionZ = this.positionZ - (speed * Math.sin(rightAngle * Math.PI / 180));
+					this.positionPZ = this.positionZ;
+					this.moveZ(null, { dz: this.positionZ });
+					this.movePZ(null, { dz: this.positionPZ });
+				}
+				else if(Math.abs(headModel - 90) > 90) {
+					this.positionZ = this.positionZ + (speed * Math.sin(rightAngle * Math.PI / 180));
+					this.positionPZ = this.positionZ;
+					this.moveZ(null, { dz: this.positionZ });
+					this.movePZ(null, { dz: this.positionPZ });
+				}
+
+				if(headModel - 90 > 0) {
+					this.positionX = this.positionX - (speed * Math.cos(Math.abs(rightAngle) * Math.PI / 180));
+					this.moveX(null, { dx: this.positionX });
+				}
+				else if(headModel - 90 < 0) {
+					this.positionX = this.positionX + (speed * Math.cos(Math.abs(rightAngle) * Math.PI / 180));
+					this.moveX(null, { dx: this.positionX });
+				}
+
         break;
       case DIRECTION.BACKWARD:
-        this.positionZ = this.positionZ + speed;
-        this.positionPZ = this.positionPZ - (speed * 10);
-        this.moveZ(null, { dz: this.positionZ });
-        this.movePZ(null, { dz: this.positionPZ });
+				if(Math.abs(headModel) < 90) {
+					this.positionZ = this.positionZ + (speed * Math.sin(angle * Math.PI / 180));
+					this.positionPZ = this.positionZ;
+					this.moveZ(null, { dz: this.positionZ });
+					this.movePZ(null, { dz: this.positionPZ });
+				}
+				else if(Math.abs(headModel) > 90) {
+					this.positionZ = this.positionZ - (speed * Math.sin(angle * Math.PI / 180));
+					this.positionPZ = this.positionZ;
+					this.moveZ(null, { dz: this.positionZ });
+					this.movePZ(null, { dz: this.positionPZ });
+				}
+
+				if(headModel > 0) {
+					this.positionX = this.positionX + (speed * Math.cos(Math.abs(angle) * Math.PI / 180));
+					this.moveX(null, { dx: this.positionX });
+				}
+
+				else if(headModel < 0) {
+					this.positionX = this.positionX - (speed * Math.cos(Math.abs(angle) * Math.PI / 180));
+					this.moveX(null, { dx: this.positionX });
+				}
         break;
       case DIRECTION.LEFT:
-        this.positionX = this.positionX - speed;
-        this.moveX(null, { dx: this.positionX });
-        break;
+				let leftAngle = Math.abs(90 - Math.abs(headModel + 90))//subtract 90 to pivot the headset right.
+				//the rest is same as fwd
+				if(Math.abs(headModel + 90) < 90) {
+					this.positionZ = this.positionZ - (speed * Math.sin(leftAngle * Math.PI / 180));
+					this.positionPZ = this.positionZ
+					this.moveZ(null, { dz: this.positionZ });
+					this.movePZ(null, { dz: this.positionPZ });
+				}
+				else if(Math.abs(headModel + 90) > 90) {
+					this.positionZ = this.positionZ + (speed * Math.sin(leftAngle * Math.PI / 180));
+					this.positionPZ = this.positionZ
+					this.moveZ(null, { dz: this.positionZ });
+					this.movePZ(null, { dz: this.positionPZ });
+				}
+
+				if(headModel + 90 > 0) {
+					this.positionX = this.positionX - (speed * Math.cos(Math.abs(leftAngle) * Math.PI / 180));
+					this.moveX(null, { dx: this.positionX });
+				}
+				else if(headModel + 90 < 0) {
+					this.positionX = this.positionX + (speed * Math.cos(Math.abs(leftAngle) * Math.PI / 180));
+					this.moveX(null, { dx: this.positionX });
+				}
       default:
         break;
     }
